@@ -1,0 +1,332 @@
+#include <iostream>
+#include <fstream>
+#include <string.h>
+#include <iomanip>
+#include <conio.h>
+#include <locale.h>
+#include <vector>
+
+using namespace std;
+void anamenu();
+void numaraEkle();
+void kayıtGöster();
+void IDArama();
+void IDkayıtSil();
+void isimkayıtSil();
+void kayıtDüzenle();
+void isimArama();
+void telArama();
+
+class telefonRehberi
+{
+	int ID;
+	char isim[30];
+	char cepNo[15];
+	char işNo[15];
+
+public:
+	int getID() { return ID; }
+	char* getisim() { return isim; }
+	char* gettelefon() { return cepNo; }
+	
+
+	void storeData()
+	{
+		telefonRehberi k;
+		cout << "\n----------Yeni Bir Numara Oluşturunuz-----------\n";
+		cout << "Lütfen ID'nizi Giriniz:\n"; cin >> ID; cin.ignore();
+		if (ID >= 0) 
+		{
+		cout << "Lütfen İsminizi ve Soyismnizi Giriniz:\n"; cin.getline(isim, 30);
+		cout << "Lütfen Cep Telefonu Numaranızı Giriniz:\n"; cin.getline(cepNo, 15);
+		cout << "Lütfen İş Numaranızı Giriniz:\n"; cin.getline(işNo, 15);
+		cout << endl;
+		}
+		else 
+		{
+			cout << "Seri Numaranız 0'dan Küçük Olamaz! \n";
+			anamenu();
+		}
+		
+	}
+
+	void showData()
+	{
+		cout << "\n----------Telefon Rehberiniz----------\n";
+		cout << "ID'niz:   " << ID << endl;
+		cout << "İsim Ve Soyisminiz:   " << isim << endl;
+		cout << "Cep Telefonu Numaranız:   " << cepNo << endl;
+		cout << "İş Numaranız:   " << işNo << endl;
+	}
+
+}; telefonRehberi b;
+
+void numaraEkle()
+{
+	ofstream file;
+	
+	file.open("TelefonRehberi.txt", ios::out | ios::binary | ios::app);
+	
+	b.storeData();
+	file.write((char*)&b, sizeof(b));
+	file.close();
+	
+	cout << "\nKayıt,Dosyaya kaydedildi.\n";
+}
+
+void kayıtGöster()
+{
+
+	ifstream file;
+	file.open("TelefonRehberi.txt", ios::out | ios::binary | ios::app);
+	while (file.read((char*)&b, sizeof(b)))
+	{
+		b.showData();
+	}
+
+	file.close();
+	cout << "Dosyadan Okuma Tamamlandı.\n";
+}
+
+void IDArama()
+{
+
+	ifstream file;
+	int i;
+	int x = 0;
+	file.open("TelefonRehberi.txt", ios::out | ios::binary | ios::app);
+	cout << "Aradığınız ID numarasını giriniz:\n";
+	cin >> i;
+
+	while (file.read((char*)&b, sizeof(b)))
+	{
+		if (i == b.getID())
+		{
+			b.showData();
+			x++;
+			cout << "ID Numarası Bulundu: \n" << i;
+		}
+
+	}
+	file.close();
+	if (x == 0)
+	{
+		cout << "Aradığınız ID Numarası: " << i << " Kayıtlarda Yok.";
+	}
+
+	cout << "Dosyadan Veri Okuma Tamamlandı.\n";
+
+}
+void isimArama()
+{
+	char is[20];
+	fstream file;
+	file.open("TelefonRehberi.txt", ios::out | ios::binary | ios::app | ios::ate | ios::in);
+	cout << "Aradığınız Adı Giriniz:";
+	cin >> is;
+	file.seekg(0, ios::beg);
+	int found = 0;
+	while (file.read((char*)&b, sizeof(b)))
+	{
+		if (strcmp(is, b.getisim()) == 0)
+		{
+			found++;
+			b.showData();
+		}
+	}
+	file.close();
+	if (found == 0) {
+		cout << "-----Kayıt Bulunamadı-----\n";
+
+	}
+	cout << "Dosya Okuma Tamamlandı\n";
+
+}
+void telArama()
+{
+
+	char telno[15];
+	fstream file;
+	file.open("TelefonRehberi.txt", ios::out | ios::binary | ios::app | ios::ate | ios::in);
+
+	cout << "Aradığınız Telefon Numarasını Giriniz:";
+	cin >> telno;
+	file.seekg(0, ios::beg);
+	int found = 0;
+	while (file.read((char*)&b, sizeof(b)))
+	{
+		if (strcmp(telno, b.gettelefon()) == 0)
+		{
+			found++;
+			b.showData();
+		}
+	}
+	file.close();
+	if (found == 0) {
+		cout << "-----Kayıt Bulunamadı-----";
+	}
+	cout << "Dosya Okuma Tamamlandı\n";
+}
+void isimkayıtSil()
+{
+	fstream file;
+	ofstream file2;
+
+	char k[100];
+
+	file.open("TelefonRehberi.txt", ios::in | ios::out | ios::binary | ios::app);
+	file2.open("Geçici.txt", ios::out | ios::binary);
+	cout << "Silinmesini İstediğiniz Kişinin İsmini Giriniz: \n";
+	cin >> k;
+
+	file.seekg(0, ios::beg);
+	int found = 0;
+	file.read((char*)&b, sizeof(b));
+	while (!file.eof())
+	{
+		if (strcmp(k, b.getisim()) != 0)
+		{
+			file2.write((char*)&b, sizeof(b));
+
+		}
+		else
+		{
+			cout << "Kaydınız Siliniyor:\n";
+			found++;
+		}
+		file.read((char*)&b, sizeof(b));
+	}
+	if (found == 0)
+	{
+		cout << "----Kayıt Bulunamadı----\n";
+	}
+
+	file2.close();
+	file.close();
+	remove("TelefonRehberi.txt");
+	rename("Geçici.txt", "TelefonRehberi.txt");
+
+
+	cout << "Dosya Okuma Tamamlandı \n";
+}
+void IDkayıtSil()
+{
+	fstream file;
+	ofstream file2;
+
+	int k;
+
+	file.open("TelefonRehberi.txt", ios::in | ios::out | ios::binary | ios::app);
+	file2.open("Geçici.txt", ios::out | ios::binary);
+	cout << "Silinmesini İstediğiniz Kişinin ID'sini Giriniz: \n";
+	cin >> k;
+
+	file.seekg(0, ios::beg);
+	int found = 0;
+
+	while (file.read((char*)&b, sizeof(b)))
+	{
+		if (k != b.getID())
+		{
+			file2.write((char*)&b, sizeof(b));
+
+		}
+
+		else
+		{
+			cout << "Kaydınız Siliniyor:\n";
+			found++;
+		}
+
+	}
+	file2.close();
+	file.close();
+	if (found == 0)
+	{
+		cout << "----Kayıt Bulunamadı----\n";
+	}
+	remove("TelefonRehberi.txt");
+	rename("Geçici.txt", "TelefonRehberi.txt");
+
+    cout << "Dosya Okuma Tamamlandı \n";
+}
+
+void kayıtDüzenle()
+{
+	int k;
+	fstream file;
+	int pos;
+	int found = 0;
+    
+	file.open("TelefonRehberi.txt", ios::in | ios::out | ios::binary);
+    cout << "Değiştirmek İstediğiniz Kişinin Seri Numarasını Giriniz: \n";
+	
+	cin >> k;
+
+	while (file.read((char*)&b, sizeof(b))) 
+	{
+		pos = file.tellg();
+		if (k == b.getID()) 
+		{
+			cout << "Alttaki Kayıt Değiştirilecektir! \n";
+			b.showData();
+			
+			b.storeData();
+			file.seekg(pos - sizeof(b));
+			file.write((char*)&b, sizeof(b));
+			cout << "Kaydınız Başarılı Bir Şekilde Değiştirilmiştir! \n";
+			break;
+		}
+		
+    }
+	file.close();
+	if (found == 0) 
+	{
+     cout << "----Kayıt Bulunamadı-----\n";
+     cout << "Dosya Okuma Tamamlandı \n";
+	}
+
+}
+void anamenu() {
+
+	int durum;
+
+	do
+	{
+		cout << "............................................\n";
+		cout << "           Telefon Rehberi Yöneticisi\n";
+		cout << "............................................\n\n";
+		cout << "::::::::::::::: Program Menüsü :::::::::::::::\n";
+		cout << "0. Exit \n";
+		cout << "1. Yeni Bir Numara Ekleme \n";
+		cout << "2. Kayıttaki Bütün Numaraları Göster \n";
+		cout << "3. ID'ye Göre Arama \n";
+		cout << "4. İsime Göre Arama \n";
+		cout << "5. Telefon Numarasına Göre Arama \n";
+		cout << "6. İstenilen Bir Kayıdı Değiştirme \n";
+		cout << "7. İstenilen Bir Kayıdı ID'ye Göre Silme \n";
+		cout << "8. İstenilen Bir Kayıdı İsime Göre Silme \n";
+		cout << "Yapmak istediğiniz Talimatı Giriniz: \n";
+		cin >> durum;
+
+		switch (durum)
+		{
+
+		case 1:  numaraEkle(); break;
+		case 2:	 kayıtGöster(); break;
+		case 3:	 IDArama(); break;
+		case 4:  isimArama(); break;
+		case 5:	 telArama(); break;
+		case 6:	 kayıtDüzenle(); break;
+		case 7:  IDkayıtSil(); break;
+		case 8:  isimkayıtSil(); break;
+		}
+	} while (durum);
+
+}
+
+void main() 
+{
+    setlocale(LC_ALL, "Turkish");
+	anamenu();
+}
